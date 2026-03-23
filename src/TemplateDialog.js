@@ -92,6 +92,14 @@ export default function TemplateDialog({ open, onClose, template, entity, record
     const password = recordData?.Portal_Password || generatePassword();
     const url = `https://home-espana-client-portal-nextjs-ap.vercel.app/${template.id}/${entity.moduleName}/${entity.recordId}`;
 
+    const newDocumentsRequested = requirements
+      .filter((r) => r.checked)
+      .map((r) => `${r.name}(${(r.fileTypes || []).join(",")})`)
+      .join("-##-");
+
+    const prevDocumentsRequested = recordData?.Documents_Requested_Current || "";
+    const documentsChanged = newDocumentsRequested !== prevDocumentsRequested;
+
     ZOHO.CRM.API.updateRecord({
       Entity: entity.moduleName,
       APIData: {
@@ -99,7 +107,12 @@ export default function TemplateDialog({ open, onClose, template, entity, record
         Portal_Password: password,
         Portal_URL: url,
         Additional_Template_JSON: updatedJSON,
+        ...(documentsChanged && {
+          Documents_Requested_Current: newDocumentsRequested,
+          Documents_Requested_Old: prevDocumentsRequested,
+        }),
       },
+      Trigger: ["workflow"],
     })
       .then(() => {
         setSaving(false);
