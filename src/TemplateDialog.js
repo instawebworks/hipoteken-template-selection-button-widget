@@ -21,6 +21,7 @@ import {
 
 const FILE_TYPE_OPTIONS = ["PDF", "PNG", "JPG", "JPEG"];
 const REQUIREMENT_OPTIONS = ["Required", "Optional"];
+const SCAN_TYPE_OPTIONS = ["Single", "Front & Back"];
 
 function generatePassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!";
@@ -62,6 +63,16 @@ export default function TemplateDialog({ open, onClose, template, entity, record
     );
   };
 
+  const updateFileTypes = (id, value) => {
+    setRequirements((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        const hasPdf = value.includes("PDF");
+        return { ...r, fileTypes: value, ...(hasPdf && { scanType: "Single" }) };
+      }),
+    );
+  };
+
   const removeRequirement = (id) => {
     setRequirements((prev) => prev.filter((r) => r.id !== id));
   };
@@ -75,6 +86,7 @@ export default function TemplateDialog({ open, onClose, template, entity, record
         checked: true,
         uploadCount: 1,
         requirement: "Required",
+        scanType: "Single",
         additionalInstructions: "",
         fileTypes: [],
       },
@@ -224,15 +236,13 @@ export default function TemplateDialog({ open, onClose, template, entity, record
                   </IconButton>
                 </Box>
 
-                {/* File types + upload count + requirement */}
+                {/* File types + scan type + requirement */}
                 <Box display="flex" gap={1.5} alignItems="flex-start" mb={1}>
                   <Autocomplete
                     multiple
                     options={FILE_TYPE_OPTIONS}
                     value={req.fileTypes}
-                    onChange={(_, value) =>
-                      updateRequirement(req.id, "fileTypes", value)
-                    }
+                    onChange={(_, value) => updateFileTypes(req.id, value)}
                     freeSolo
                     renderTags={(value, getTagProps) =>
                       value.map((option, index) => {
@@ -258,21 +268,26 @@ export default function TemplateDialog({ open, onClose, template, entity, record
                     sx={{ flex: 1 }}
                     size="small"
                   />
-                  <TextField
-                    label="Upload Count"
-                    type="number"
-                    value={req.uploadCount}
-                    onChange={(e) =>
-                      updateRequirement(
-                        req.id,
-                        "uploadCount",
-                        Number(e.target.value),
-                      )
-                    }
-                    size="small"
-                    inputProps={{ min: 1 }}
-                    sx={{ width: 120 }}
-                  />
+                  <FormControl size="small" sx={{ width: 140 }} disabled={req.fileTypes.includes("PDF")}>
+                    <InputLabel>Scan Type</InputLabel>
+                    <Select
+                      value={req.scanType || "Single"}
+                      label="Scan Type"
+                      onChange={(e) =>
+                        updateRequirement(req.id, "scanType", e.target.value)
+                      }
+                    >
+                      {SCAN_TYPE_OPTIONS.map((opt) => (
+                        <MenuItem
+                          key={opt}
+                          value={opt}
+                          sx={{ fontSize: "0.8rem" }}
+                        >
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                   <FormControl size="small" sx={{ width: 140 }}>
                     <InputLabel>Requirement</InputLabel>
                     <Select
