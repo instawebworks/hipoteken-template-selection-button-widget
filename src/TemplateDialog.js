@@ -102,7 +102,7 @@ export default function TemplateDialog({ open, onClose, template, entity, record
       documentRequirements: requirements,
     });
     const password = recordData?.Portal_Password || generatePassword();
-    const url = `https://home-espana-client-portal-nextjs-ap.vercel.app/${template.id}/${entity.moduleName}/${entity.recordId}`;
+    const url = `https://hipoteken-client-portal-nextjs-ap.vercel.app/${template.id}/${entity.moduleName}/${entity.recordId}`;
 
     const newDocumentsRequested = requirements
       .filter((r) => r.checked)

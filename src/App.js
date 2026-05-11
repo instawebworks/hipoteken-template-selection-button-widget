@@ -90,6 +90,20 @@ function App() {
     setDialogOpen(true);
   };
 
+  // Primary: template ID embedded in Portal_URL path segment [3]
+  const assignedTemplateId = recordData?.Portal_URL
+    ? recordData.Portal_URL.split("/")[3]
+    : null;
+
+  // Fallback: match template name against the record's tax residency country
+  const taxResidency = (recordData?.Client_s_Tax_Residency || "").toLowerCase().trim();
+
+  const isAssignedTemplate = (template) => {
+    if (assignedTemplateId) return template.id === assignedTemplateId;
+    if (taxResidency) return template.Name.toLowerCase().trim() === taxResidency;
+    return false;
+  };
+
   const headerCellSx = {
     backgroundColor: "#2c6da4",
     color: "#fff",
@@ -131,15 +145,33 @@ function App() {
             </TableHead>
             <TableBody>
               {templates.map((template) => {
+                const assigned = isAssignedTemplate(template);
                 return (
                   <TableRow
                     key={template.id}
                     hover
                     onClick={() => handleRowClick(template)}
-                    sx={{ cursor: "pointer" }}
+                    sx={{
+                      cursor: "pointer",
+                      ...(assigned && {
+                        backgroundColor: "#e8f4e8",
+                        "&:hover": { backgroundColor: "#d4ecda" },
+                      }),
+                    }}
                   >
                     <TableCell sx={{ ...bodyCellSx, fontWeight: 700 }}>
-                      {template.Name}
+                      <Box display="flex" alignItems="center" gap={1}>
+                        {template.Name}
+                        {assigned && (
+                          <Chip
+                            label="Current"
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                            sx={{ fontSize: "0.65rem", height: 18, fontWeight: 600 }}
+                          />
+                        )}
+                      </Box>
                     </TableCell>
                     <TableCell sx={bodyCellSx}>
                       {template.Module_Name}
